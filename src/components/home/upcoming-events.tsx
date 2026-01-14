@@ -8,7 +8,7 @@ import { DASHBOARD_CALENDAR_UPCOMING_EVENTS_QUERY } from "@/graphql/queries"
 import dayjs from "dayjs"
 
 const UpcomingEvents = () => {
-    const { data, isLoading } = useList({
+    const { query, result } = useList({
         resource: 'events',
         pagination: { pageSize: 5 },
         sorters: [
@@ -29,7 +29,8 @@ const UpcomingEvents = () => {
         }
     })
 
-    const events = data?.data ?? data?.nodes ?? []
+    const isLoading = query.isLoading;
+    const events = result?.data ?? [];
 
     return (
         <Card
