@@ -6,6 +6,7 @@ import UpcomingEventsSkeleton from "./skeleton/upcoming-events";
 import ProjectCardSkeleton from "./skeleton/project-card";
 import LatestActivitiesSkeleton from "./skeleton/latest-activities";
 import DashboardTotalCountCard from "./home/total-count-card";
+import DashboardLatestActivities from "./home/latest-activities";
 
 export {
     UpcomingEvents,
@@ -15,5 +16,6 @@ export {
     UpcomingEventsSkeleton,
     ProjectCardSkeleton,
     LatestActivitiesSkeleton,
-    DashboardTotalCountCard
+    DashboardTotalCountCard,
+    DashboardLatestActivities
 };
