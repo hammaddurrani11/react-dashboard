@@ -3,7 +3,8 @@ import { Card, List } from "antd"
 import { Text } from "../text"
 import LatestActivitiesSkeleton from "../skeleton/latest-activities";
 import { useList } from "@refinedev/core";
-import { DASHBOARD_LATEST_ACTIVITIES_AUDITS_QUERY } from "@/graphql/queries";
+import { DASHBOARD_LATEST_ACTIVITIES_AUDITS_QUERY, DASHBOARD_LATEST_ACTIVITIES_DEALS_QUERY } from "@/graphql/queries";
+import dayjs from "dayjs";
 
 const DashboardLatestActivities = () => {
     const { result, query } = useList({
@@ -13,8 +14,33 @@ const DashboardLatestActivities = () => {
         }
     })
 
-    const data = result?.data ?? [];
+    const deals = result?.data ?? [];
     const isLoading: boolean = query?.isLoading;
+
+    console.log(deals)
+
+    const dealIds = deals?.map((audit) => audit?.targetId);
+
+    const { result: dealResult, query: dealQuery } = useList({
+        resource: 'deals',
+        queryOptions: { enabled: !!dealIds?.length },
+        pagination: {
+            mode: 'off'
+        },
+        filters: [{
+            field: 'id',
+            operator: 'in',
+            value: dealIds
+        }],
+        meta: {
+            gqlQuery: DASHBOARD_LATEST_ACTIVITIES_DEALS_QUERY
+        }
+    })
+
+    const auditData = dealResult?.data ?? [];
+    const dealsLoading = dealQuery?.isLoading;
+
+    console.log(auditData)
 
     return (
         <Card
@@ -35,7 +61,7 @@ const DashboardLatestActivities = () => {
                 </div>
             )}
         >
-            {isLoading ? (
+            {isLoading && dealsLoading ? (
                 <List
                     itemLayout="horizontal"
                     dataSource={Array.from({ length: 5 }).map((_, i) => ({ id: i }))}
@@ -46,9 +72,16 @@ const DashboardLatestActivities = () => {
             ) : (
                 <List
                     itemLayout="horizontal"
-                    dataSource={data}
-                    renderItem={(item)=>{
-                        return <div></div>
+                    dataSource={auditData}
+                    renderItem={(item) => {
+                        const deal = deals?.find((deal) => deal.id === item.targetId) || undefined;
+                        return (
+                            <List.Item>
+                                <List.Item.Meta
+                                    title={dayjs(deal?.createdAt).format('MMM DD, YYYY - HH:mm')}
+                                />
+                            </List.Item>
+                        )
                     }}
                 />
             )}
