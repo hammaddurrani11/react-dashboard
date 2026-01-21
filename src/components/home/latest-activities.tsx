@@ -1,12 +1,15 @@
 import { UnorderedListOutlined } from "@ant-design/icons"
-import { Card, List } from "antd"
+import { Card, List, Space } from "antd"
 import { Text } from "../text"
 import LatestActivitiesSkeleton from "../skeleton/latest-activities";
 import { useList } from "@refinedev/core";
 import { DASHBOARD_LATEST_ACTIVITIES_AUDITS_QUERY, DASHBOARD_LATEST_ACTIVITIES_DEALS_QUERY } from "@/graphql/queries";
 import dayjs from "dayjs";
+import CustomAvatar from "../custom-avatar";
 
 const DashboardLatestActivities = () => {
+
+    //Audits Query
     const { result, query } = useList({
         resource: 'audits',
         meta: {
@@ -14,13 +17,14 @@ const DashboardLatestActivities = () => {
         }
     })
 
-    const deals = result?.data ?? [];
+    const auditsData = result?.data ?? [];
     const isLoading: boolean = query?.isLoading;
+    console.log('auditData', auditsData)
 
-    console.log(deals)
+    const dealIds = auditsData?.map((audit) => audit?.targetId);
+    console.log('dealIds', dealIds)
 
-    const dealIds = deals?.map((audit) => audit?.targetId);
-
+    //Deals Query
     const { result: dealResult, query: dealQuery } = useList({
         resource: 'deals',
         queryOptions: { enabled: !!dealIds?.length },
@@ -37,10 +41,9 @@ const DashboardLatestActivities = () => {
         }
     })
 
-    const auditData = dealResult?.data ?? [];
+    const dealsData = dealResult?.data ?? [];
     const dealsLoading = dealQuery?.isLoading;
-
-    console.log(auditData)
+    console.log('dealsData', dealsData)
 
     return (
         <Card
@@ -72,13 +75,37 @@ const DashboardLatestActivities = () => {
             ) : (
                 <List
                     itemLayout="horizontal"
-                    dataSource={auditData}
+                    dataSource={dealsData}
                     renderItem={(item) => {
-                        const deal = deals?.find((deal) => deal.id === item.targetId) || undefined;
+                        const audit = auditsData?.find((audit) => String(audit?.targetId) === item?.id) || undefined;
+                        console.log('audit', audit);
+
                         return (
                             <List.Item>
                                 <List.Item.Meta
-                                    title={dayjs(deal?.createdAt).format('MMM DD, YYYY - HH:mm')}
+                                    title={dayjs(item?.createdAt).format('MMM DD, YYYY - HH:mm')}
+                                    avatar={
+                                        <CustomAvatar
+                                            shape="square"
+                                            size={48}
+                                            src={item?.company?.avatarUrl}
+                                            name={item?.company?.name}
+                                        />
+                                    }
+                                    description={
+                                        <Space size={4}>
+                                            <Text strong>{audit?.user?.name}</Text>
+                                            <Text>
+                                                {audit?.action === 'CREATE' ? 'created' : 'moved'}
+                                            </Text>
+                                            <Text strong>{item?.title}</Text>
+                                            <Text>deal</Text>
+                                            <Text>{audit?.action === 'CREATE' ? 'in' : 'to'}</Text>
+                                            <Text strong>
+                                                {item?.stage?.title}
+                                            </Text>
+                                        </Space>
+                                    }
                                 />
                             </List.Item>
                         )
