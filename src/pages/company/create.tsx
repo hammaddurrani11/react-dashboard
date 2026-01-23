@@ -1,8 +1,12 @@
 import { CREATE_COMPANY_MUTATION } from "@/graphql/mutation";
-import { useModalForm } from "@refinedev/antd"
+import { useModalForm, useSelect } from "@refinedev/antd"
 import { useGo } from "@refinedev/core"
 import { CompanyList } from "./list";
 import { Form, Input, Modal, Select } from "antd";
+import { USERS_SELECT_QUERY } from "@/graphql/queries";
+import SelectOptionWithAvatar from "@/components/select-option-with-avatar";
+import { GetFieldsFromList } from "@refinedev/nestjs-query";
+import { UsersSelectQuery } from "@/graphql/types";
 
 
 const Create = () => {
@@ -15,6 +19,20 @@ const Create = () => {
             type: 'replace'
         })
     }
+
+    const { selectProps } = useSelect<GetFieldsFromList<UsersSelectQuery>>({
+        resource: "users",
+        optionValue: "id",
+        optionLabel: (item) => (
+            <SelectOptionWithAvatar
+                name={item?.name}
+                avatarUrl={item?.avatarUrl ?? undefined}
+            />
+        ),
+        meta: {
+            gqlQuery: USERS_SELECT_QUERY
+        }
+    })
 
     const { formProps, modalProps } = useModalForm({
         action: "create",
@@ -52,6 +70,7 @@ const Create = () => {
                     >
                         <Select
                             placeholder="Select Sales Owner"
+                            {...selectProps}
                         />
                     </Form.Item>
                 </Form>
